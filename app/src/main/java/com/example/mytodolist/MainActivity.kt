@@ -18,9 +18,7 @@ class MainActivity : ComponentActivity() {
         navController = navController, // 컨트롤러
         startDestination = "listView" // 시작 화면의 route명
       ) {
-        composable("listView") { // 화면과 route명을 연결
-          ListView()
-        }
+        composable("listView") { ListView() } // 화면과 route명을 연결
       }
     }
   }
