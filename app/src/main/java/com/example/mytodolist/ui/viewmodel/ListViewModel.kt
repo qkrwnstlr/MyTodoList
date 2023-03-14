@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.example.mytodolist.data.repository.ListDataRepository
 import com.example.mytodolist.data.repository.MemoryListDataRepository
 import com.example.mytodolist.model.ListData
+import com.example.mytodolist.model.ListFilter
 
 class ListViewModel : ViewModel() {
   init {
@@ -13,7 +14,14 @@ class ListViewModel : ViewModel() {
 
   private val _repository: ListDataRepository = MemoryListDataRepository()
 
-  val listDataList: Map<Int, ListData> = _repository.getAllListData()
+  private val _searchFilterList = mutableStateMapOf<ListFilter, Boolean>(
+    ListFilter.FINISHED to true,
+    ListFilter.UNFINISHED to true,
+  )
+
+  val listDataList: Map<Int, ListData> =
+    _repository.getAllListData(*_searchFilterList.keys.filter { _searchFilterList[it]!! }
+      .toTypedArray())
 
   private val _isCheckedList by lazy { mutableStateMapOf<Int, Boolean>() }
   private var _isCheckedCount by mutableStateOf(0)
@@ -52,25 +60,33 @@ class ListViewModel : ViewModel() {
 
   fun changeFinishState(no: Int) {
     _repository.changeFinishState(no)
-    println("(ListViewModel) isFinished($no) : ${listDataList[no]!!.isFinish}")
+    println("(ListViewModel) isFinished($no) : ${listDataList[no]!!.isFinished}")
   }
 
   fun showAddListDataView() {
 
   }
 
-  private val _searchFilterList = mutableStateMapOf<String, Boolean>(
-    "Finished" to true,
-    "unFinished" to true,
-  )
-  val searchFilterList: Map<String, Boolean> = _searchFilterList
-  fun onSearchFilterCheckedChange(filterItem: String, changeTo: Boolean) {
+  val searchFilterList: Map<ListFilter, Boolean> = _searchFilterList
+  fun onSearchFilterCheckedChange(filterItem: ListFilter, changeTo: Boolean) {
     _searchFilterList[filterItem] = changeTo
   }
 
   var isSearchFilterDDMExpended by mutableStateOf(false)
   fun onIsSearchFilterDDMExpendedChange() {
     isSearchFilterDDMExpended = !isSearchFilterDDMExpended
+    println("(ListViewModel) ListDataList : $listDataList, ${listDataList.size}")
+    println("(ListViewModel) filter : $_searchFilterList, ${_searchFilterList.size}")
+    if (!isSearchFilterDDMExpended){
+      _repository.getAllListData(*_searchFilterList.keys.filter { _searchFilterList[it]!! }
+        .toTypedArray())
+      isAllChecked = false
+    }
+    /*    if (!isSearchFilterDDMExpended) {
+      listDataList =
+        _repository.getAllListData(*_searchFilterList.keys.filter { _searchFilterList[it]!! }
+          .toTypedArray())
+    }*/
     println("(ViewModel)isSearchFilterDDMExpended $isSearchFilterDDMExpended")
   }
 }
