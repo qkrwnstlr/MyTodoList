@@ -1,5 +1,6 @@
 package com.example.mytodolist.ui.view
 
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
@@ -23,11 +23,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mytodolist.model.ListData
-import com.example.mytodolist.model.ListFilter
+import com.example.mytodolist.model.ListState
 import com.example.mytodolist.ui.viewmodel.ListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,7 +54,7 @@ fun ListView(modifier: Modifier = Modifier) {
     },
     floatingActionButton = {
       FloatingActionButton(
-        onClick = viewModel::showAddListDataView,
+        onClick = viewModel::onIsAddListDataPopupExpendedChanged,
         shape = RoundedCornerShape(16.dp),
       ) {
         Icon(
@@ -63,21 +65,24 @@ fun ListView(modifier: Modifier = Modifier) {
       }
     }
   ) {
-    ConstraintLayout(
-      modifier
-        .fillMaxSize()
-        .padding(it)
-    ) {
-      val (listLayout1) = createRefs() // 제약에 사용할 참조 생성
-      ListLayout(
-        Modifier
-          .constrainAs(listLayout1) {
-            width = Dimension.fillToConstraints // dimension을 지정해야 현재 레이아웃의 크기가 정상적으로 전해진다.
-            // 그렇지 않으면 fillMaxSize에 의해서 어떤 배치에도 상관없이 현재 화면 크기와 똑같이 된다.
-            centerHorizontallyTo(parent)
-            top.linkTo(parent.top)
-          },
-      )
+    Box() {
+      ConstraintLayout(
+        modifier
+          .fillMaxSize()
+          .padding(it)
+      ) {
+        val (listLayout1) = createRefs() // 제약에 사용할 참조 생성
+        ListLayout(
+          Modifier
+            .constrainAs(listLayout1) {
+              width = Dimension.fillToConstraints // dimension을 지정해야 현재 레이아웃의 크기가 정상적으로 전해진다.
+              // 그렇지 않으면 fillMaxSize에 의해서 어떤 배치에도 상관없이 현재 화면 크기와 똑같이 된다.
+              centerHorizontallyTo(parent)
+              top.linkTo(parent.top)
+            },
+        )
+      }
+      // AddListPopup()
     }
   }
 }
@@ -122,8 +127,8 @@ fun ListHead(
   onSearchFilterListButtonClicked: () -> Unit,
   isSearchFilterDDMExpended: Boolean,
   onIsSearchFilterDDMExpendedChange: () -> Unit,
-  searchFilterList: Map<ListFilter, Boolean>,
-  onSearchFilterCheckedChange: (ListFilter, Boolean) -> Unit,
+  searchFilterList: Map<ListState, Boolean>,
+  onSearchFilterCheckedChange: (ListState, Boolean) -> Unit,
   modifier: Modifier = Modifier
 ) {
   Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -273,14 +278,13 @@ fun ListItem(
 fun SearchFilterDropdownMenu(
   expanded: Boolean,
   onDismissRequest: () -> Unit,
-  dropdownMenuItemList: Map<ListFilter, Boolean>,
-  onDropdownMenuClicked: (ListFilter, Boolean) -> Unit
+  dropdownMenuItemList: Map<ListState, Boolean>,
+  onDropdownMenuClicked: (ListState, Boolean) -> Unit
 ) {
   DropdownMenu(
     expanded = expanded,
     onDismissRequest = onDismissRequest,
     offset = DpOffset(0.dp, 10.dp),
-    modifier = Modifier.clip(ButtonDefaults.shape)
   ) {
     dropdownMenuItemList.forEach { (filterItem, isChecked) ->
       DropdownMenuItem(
@@ -291,14 +295,30 @@ fun SearchFilterDropdownMenu(
               imageVector = Icons.Rounded.Check,
               contentDescription = "$filterItem is checked Icon",
               tint = if (isChecked) Color.Black else Color.Transparent,
-              modifier = Modifier.padding(start = 10.dp)
+              modifier = Modifier.padding(start = 16.dp)
             )
           }
         },
         onClick = { onDropdownMenuClicked(filterItem, !isChecked) },
-        modifier = Modifier.clip(ButtonDefaults.shape)
       )
     }
+  }
+}
+
+@Composable
+fun AddListPopup(
+  expanded: Boolean,
+  onDismissRequest: () -> Unit,
+  onAddButtonClicked: (String) -> Unit,
+  modifier: Modifier = Modifier,
+  offset: DpOffset = DpOffset(0.dp, 0.dp),
+  properties: PopupProperties = PopupProperties(focusable = true),
+) {
+  Popup(
+    alignment = Alignment.Center,
+    onDismissRequest = onDismissRequest
+  ) {
+    val expandedStates = remember { MutableTransitionState(false) }
   }
 }
 

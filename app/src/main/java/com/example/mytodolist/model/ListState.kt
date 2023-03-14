@@ -1,6 +1,6 @@
 package com.example.mytodolist.model
 
-enum class ListFilter {
+enum class ListState {
   FINISHED {
     override fun toBoolean(): Boolean = true
     override fun toString(): String = "FINISHED"
@@ -11,11 +11,11 @@ enum class ListFilter {
   };
 
   companion object {
-    fun fromBoolean(data: Boolean): ListFilter {
+    fun fromBoolean(data: Boolean): ListState {
       return if (data) FINISHED else UNFINISHED
     }
 
-    fun fromString(data: String): ListFilter {
+    fun fromString(data: String): ListState {
       return when (data) {
         "FINISH" -> FINISHED
         else -> UNFINISHED

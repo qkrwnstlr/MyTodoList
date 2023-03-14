@@ -5,14 +5,14 @@ import androidx.lifecycle.ViewModel
 import com.example.mytodolist.data.repository.ListDataRepository
 import com.example.mytodolist.data.repository.MemoryListDataRepository
 import com.example.mytodolist.model.ListData
-import com.example.mytodolist.model.ListFilter
+import com.example.mytodolist.model.ListState
 
 class ListViewModel : ViewModel() {
   private val _repository: ListDataRepository = MemoryListDataRepository()
 
-  private val _searchFilterList = mutableStateMapOf<ListFilter, Boolean>(
-    ListFilter.FINISHED to true,
-    ListFilter.UNFINISHED to true,
+  private val _searchFilterList = mutableStateMapOf<ListState, Boolean>(
+    ListState.FINISHED to true,
+    ListState.UNFINISHED to true,
   )
 
   val listDataList: Map<Int, ListData> =
@@ -44,12 +44,14 @@ class ListViewModel : ViewModel() {
     isAllChecked = !isAllChecked
   }
 
+  var isAddListDataPopupExpended by mutableStateOf(false)
+
   fun addListData(listData: ListData) {
     _repository.addListData(listData)
   }
 
-  fun showAddListDataView() {
-
+  fun onIsAddListDataPopupExpendedChanged() {
+    isAddListDataPopupExpended = !isAddListDataPopupExpended
   }
 
   fun removeListData() {
@@ -62,8 +64,8 @@ class ListViewModel : ViewModel() {
     _repository.changeFinishState(no)
   }
 
-  val searchFilterList: Map<ListFilter, Boolean> = _searchFilterList
-  fun onSearchFilterCheckedChange(filterItem: ListFilter, changeTo: Boolean) {
+  val searchFilterList: Map<ListState, Boolean> = _searchFilterList
+  fun onSearchFilterCheckedChange(filterItem: ListState, changeTo: Boolean) {
     _searchFilterList[filterItem] = changeTo
   }
 

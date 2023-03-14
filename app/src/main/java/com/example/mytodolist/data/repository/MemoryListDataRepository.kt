@@ -3,7 +3,7 @@ package com.example.mytodolist.data.repository
 import androidx.compose.runtime.mutableStateMapOf
 import com.example.mytodolist.model.ListData
 import com.example.mytodolist.model.ListDataDTO
-import com.example.mytodolist.model.ListFilter
+import com.example.mytodolist.model.ListState
 
 class MemoryListDataRepository : ListDataRepository {
   private val _memoryRepository =
@@ -16,10 +16,10 @@ class MemoryListDataRepository : ListDataRepository {
 
   private val _listDataList = mutableStateMapOf<Int, ListData>()
 
-  override fun getAllListData(vararg filter: ListFilter): Map<Int, ListData> {
+  override fun getAllListData(vararg filter: ListState): Map<Int, ListData> {
     _listDataList.clear()
     for (no in _memoryRepository.keys) {
-      if (filter.contains(ListFilter.fromBoolean(_memoryRepository[no]!!.isFinished)))
+      if (filter.contains(ListState.fromBoolean(_memoryRepository[no]!!.isFinished)))
         _listDataList[no] = ListData.fromListDataDTO(_memoryRepository[no]!!)
     }
     return _listDataList
