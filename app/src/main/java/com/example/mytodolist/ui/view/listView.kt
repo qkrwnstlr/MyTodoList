@@ -34,7 +34,6 @@ import com.example.mytodolist.ui.viewmodel.ListViewModel
 @Composable
 fun ListView(modifier: Modifier = Modifier) {
   val viewModel = viewModel<ListViewModel>()
-  println("(ListView) ListDataList1 : ${viewModel.listDataList}")
   Scaffold(
     topBar = {
       TopAppBar(
@@ -86,7 +85,6 @@ fun ListView(modifier: Modifier = Modifier) {
 @Composable
 fun ListLayout(modifier: Modifier = Modifier) {
   val viewModel = viewModel<ListViewModel>()
-  println("(ListView) ListDataList2 : ${viewModel.listDataList}")
   Column(modifier) {
     ListHead(
       viewModel::removeListData,
@@ -103,9 +101,7 @@ fun ListLayout(modifier: Modifier = Modifier) {
       viewModel::onAllCheckedChanged,
     )
     LazyColumn { // 임마는 왜 자꾸 호출됨...?
-      println("(ListView) ListDataList3 : ${viewModel.listDataList}, ${viewModel.listDataList.size}")
       items(items = viewModel.listDataList.toList()) { (no, listData) ->
-        println("(ListView) isFinished2 $no : ${listData.isFinished}")
         ListItem(
           listData,
           viewModel.isCheckedList[no] ?: false,
@@ -156,13 +152,12 @@ fun ListHead(
           trailingIcon = {
             Box {
               IconButton(onClick = onSearchFilterListButtonClicked) {
-                println("(ListView) isSearchFilterDDMExpended $isSearchFilterDDMExpended")
                 Icon(
                   Icons.Rounded.FilterList,
                   "Search Btn"
                 )
               }
-              SearchFilterList(
+              SearchFilterDropdownMenu(
                 expanded = isSearchFilterDDMExpended,
                 onDismissRequest = onIsSearchFilterDDMExpendedChange,
                 dropdownMenuItemList = searchFilterList,
@@ -240,7 +235,6 @@ fun ListItem(
   onCompleteButtonClick: (Int) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  println("(ListView) ListItem${listData.no} : ${listData.isFinished} is created")
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier = modifier.fillMaxSize(),
@@ -259,13 +253,7 @@ fun ListItem(
       FIXME : TextDecoration이 처음에 None이 아닌 다른 것으로 설정된 후에는 정상적으로 바뀌지 않는 버그
       None에서 시작하면 다른걸로 바껴도 정상적으로 작동하나, None이 아닌 다른 것으로 시작하면 안 바뀜
       */
-      textDecoration = if (listData.isFinished.toBoolean()){
-        println("(ListView) textDecoration${listData.no} : TextDecoration.LineThrough")
-        TextDecoration.LineThrough
-      } else {
-        println("(ListView) textDecoration${listData.no} : TextDecoration.None")
-        TextDecoration.None
-      },
+      textDecoration = if (listData.isFinished.toBoolean()) TextDecoration.LineThrough else TextDecoration.None,
       modifier = Modifier.weight(4f),
       textAlign = TextAlign.Center
     )
@@ -282,7 +270,7 @@ fun ListItem(
 }
 
 @Composable
-fun SearchFilterList(
+fun SearchFilterDropdownMenu(
   expanded: Boolean,
   onDismissRequest: () -> Unit,
   dropdownMenuItemList: Map<ListFilter, Boolean>,
@@ -297,7 +285,6 @@ fun SearchFilterList(
     dropdownMenuItemList.forEach { (filterItem, isChecked) ->
       DropdownMenuItem(
         text = {
-          println("(SearchFilterList) expended $expanded")
           Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text = filterItem.toString(), Modifier.weight(1f))
             Icon(

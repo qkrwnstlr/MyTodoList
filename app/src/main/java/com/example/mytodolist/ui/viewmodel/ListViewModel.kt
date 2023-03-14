@@ -8,10 +8,6 @@ import com.example.mytodolist.model.ListData
 import com.example.mytodolist.model.ListFilter
 
 class ListViewModel : ViewModel() {
-  init {
-    println("(ListViewModel) is created")
-  }
-
   private val _repository: ListDataRepository = MemoryListDataRepository()
 
   private val _searchFilterList = mutableStateMapOf<ListFilter, Boolean>(
@@ -23,7 +19,7 @@ class ListViewModel : ViewModel() {
     _repository.getAllListData(*_searchFilterList.keys.filter { _searchFilterList[it]!! }
       .toTypedArray())
 
-  private val _isCheckedList by lazy { mutableStateMapOf<Int, Boolean>() }
+  private val _isCheckedList = mutableStateMapOf<Int, Boolean>()
   private var _isCheckedCount by mutableStateOf(0)
   var isAllChecked by mutableStateOf(false)
   val isCheckedList: Map<Int, Boolean> = _isCheckedList
@@ -37,19 +33,23 @@ class ListViewModel : ViewModel() {
     _isCheckedList[no] = changeTo ?: !(_isCheckedList[no] ?: false)
     if (_isCheckedList[no]!!) ++_isCheckedCount
     else --_isCheckedCount
-    isAllChecked = _isCheckedCount == _repository.getAllListData().size
+    isAllChecked = _isCheckedCount == listDataList.size
   }
 
   fun onAllCheckedChanged() {
     if (isAllChecked) _isCheckedList.clear()
-    else _repository.getAllListData()
+    else listDataList
       .forEach { (no, _) -> _isCheckedList[no] = true }
-    _isCheckedCount = if (isAllChecked) 0 else _repository.getAllListData().size
+    _isCheckedCount = if (isAllChecked) 0 else listDataList.size
     isAllChecked = !isAllChecked
   }
 
   fun addListData(listData: ListData) {
     _repository.addListData(listData)
+  }
+
+  fun showAddListDataView() {
+
   }
 
   fun removeListData() {
@@ -60,11 +60,6 @@ class ListViewModel : ViewModel() {
 
   fun changeFinishState(no: Int) {
     _repository.changeFinishState(no)
-    println("(ListViewModel) isFinished($no) : ${listDataList[no]!!.isFinished}")
-  }
-
-  fun showAddListDataView() {
-
   }
 
   val searchFilterList: Map<ListFilter, Boolean> = _searchFilterList
@@ -75,18 +70,12 @@ class ListViewModel : ViewModel() {
   var isSearchFilterDDMExpended by mutableStateOf(false)
   fun onIsSearchFilterDDMExpendedChange() {
     isSearchFilterDDMExpended = !isSearchFilterDDMExpended
-    println("(ListViewModel) ListDataList : $listDataList, ${listDataList.size}")
-    println("(ListViewModel) filter : $_searchFilterList, ${_searchFilterList.size}")
     if (!isSearchFilterDDMExpended){
       _repository.getAllListData(*_searchFilterList.keys.filter { _searchFilterList[it]!! }
         .toTypedArray())
       isAllChecked = false
+      _isCheckedList.clear()
+      _isCheckedCount = 0
     }
-    /*    if (!isSearchFilterDDMExpended) {
-      listDataList =
-        _repository.getAllListData(*_searchFilterList.keys.filter { _searchFilterList[it]!! }
-          .toTypedArray())
-    }*/
-    println("(ViewModel)isSearchFilterDDMExpended $isSearchFilterDDMExpended")
   }
 }

@@ -6,10 +6,6 @@ import com.example.mytodolist.model.ListDataDTO
 import com.example.mytodolist.model.ListFilter
 
 class MemoryListDataRepository : ListDataRepository {
-  init {
-    println("ListDataRepository is created")
-  }
-
   private val _memoryRepository =
     mutableStateMapOf<Int, ListDataDTO>(
       1 to ListDataDTO(1, "1", true),
@@ -21,14 +17,11 @@ class MemoryListDataRepository : ListDataRepository {
   private val _listDataList = mutableStateMapOf<Int, ListData>()
 
   override fun getAllListData(vararg filter: ListFilter): Map<Int, ListData> {
-    println("(MemoryListDataRepository) ListDataList1 : $_listDataList, ${_listDataList.size}")
     _listDataList.clear()
-    println("(MemoryListDataRepository) filter : $filter, ${filter.size}")
     for (no in _memoryRepository.keys) {
       if (filter.contains(ListFilter.fromBoolean(_memoryRepository[no]!!.isFinished)))
         _listDataList[no] = ListData.fromListDataDTO(_memoryRepository[no]!!)
     }
-    println("(MemoryListDataRepository) ListDataList2 : $_listDataList, ${_listDataList.size}")
     return _listDataList
   }
 
@@ -48,6 +41,5 @@ class MemoryListDataRepository : ListDataRepository {
     _memoryRepository[no] =
       ListDataDTO(no, _memoryRepository[no]!!.todo, !_memoryRepository[no]!!.isFinished)
     _listDataList[no] = ListData.fromListDataDTO(_memoryRepository[no]!!)
-    println("(MemoryListDataRepository) isFinished($no) : ${_memoryRepository[no]?.isFinished}")
   }
 }
