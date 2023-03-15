@@ -15,6 +15,7 @@ class MemoryListDataRepository : ListDataRepository {
     )
 
   private val _listDataList = mutableStateMapOf<Int, ListData>()
+  private var _currentNo = 4;
 
   override fun getAllListData(vararg filter: ListState): Map<Int, ListData> {
     _listDataList.clear()
@@ -25,7 +26,8 @@ class MemoryListDataRepository : ListDataRepository {
     return _listDataList
   }
 
-  override fun addListData(listData: ListData) {
+  override fun addListData(todo: String) {
+    val listData = ListData(++_currentNo, todo, ListState.UNFINISHED)
     _memoryRepository[listData.no] = listData.toListDataDTO()
   }
 

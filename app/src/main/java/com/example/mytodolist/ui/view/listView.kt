@@ -1,6 +1,6 @@
 package com.example.mytodolist.ui.view
 
-import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -23,8 +24,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.window.Dialog
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -65,7 +65,11 @@ fun ListView(modifier: Modifier = Modifier) {
       }
     }
   ) {
-    Box() {
+    val focusManger = LocalFocusManager.current
+    Box(modifier = Modifier.clickable(
+      interactionSource = MutableInteractionSource(),
+      indication = null
+    ) { focusManger.clearFocus() }) {
       ConstraintLayout(
         modifier
           .fillMaxSize()
@@ -82,7 +86,13 @@ fun ListView(modifier: Modifier = Modifier) {
             },
         )
       }
-      // AddListPopup()
+      AddListDataPopup(
+        expanded = viewModel.isAddListDataPopupExpended,
+        onDismissRequest = viewModel::onIsAddListDataPopupExpendedChanged,
+        onAddButtonClicked = viewModel::onAddListDataButtonClicked,
+        addTExt = viewModel.addText,
+        onAddTextChange = viewModel::onAddTextChange
+      )
     }
   }
 }
@@ -305,21 +315,65 @@ fun SearchFilterDropdownMenu(
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddListPopup(
+fun AddListDataPopup(
   expanded: Boolean,
   onDismissRequest: () -> Unit,
   onAddButtonClicked: (String) -> Unit,
+  addTExt: String,
+  onAddTextChange: (String) -> Unit,
   modifier: Modifier = Modifier,
-  offset: DpOffset = DpOffset(0.dp, 0.dp),
-  properties: PopupProperties = PopupProperties(focusable = true),
 ) {
-  Popup(
-    alignment = Alignment.Center,
-    onDismissRequest = onDismissRequest
-  ) {
-    val expandedStates = remember { MutableTransitionState(false) }
-  }
+  if (expanded)
+    Dialog(onDismissRequest = onDismissRequest) {
+      val focusManger = LocalFocusManager.current
+      Surface(
+        modifier = modifier
+          .fillMaxWidth()
+          .clickable(
+            interactionSource = MutableInteractionSource(),
+            indication = null // 클릭시 퍼짐 효과 삭제
+          ) { focusManger.clearFocus() },
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White
+      ) {
+        Column(
+          modifier = Modifier
+            .wrapContentWidth()
+            .padding(20.dp)
+        ) {
+          BasicTextField(
+            value = addTExt,
+            onValueChange = onAddTextChange,
+            modifier = Modifier
+              .height(ButtonDefaults.MinHeight)
+              .fillMaxWidth()
+          ) {
+            TextFieldDefaults.TextFieldDecorationBox(
+              value = addTExt,
+              innerTextField = it,
+              enabled = false,
+              singleLine = true,
+              visualTransformation = VisualTransformation.None,
+              interactionSource = remember { MutableInteractionSource() },
+              leadingIcon = { Icon(Icons.Rounded.Add, "Add Icon") },
+              contentPadding = PaddingValues(0.dp, 0.dp, 10.dp, 0.dp), // 패딩 삭제
+              shape = ButtonDefaults.shape,
+              colors = TextFieldDefaults.textFieldColors(
+                disabledIndicatorColor = Color.Transparent // 밑줄 삭제
+              )
+            )
+          }
+          Spacer(modifier = Modifier.height(10.dp))
+          Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = { onAddButtonClicked(addTExt) }) {
+              Text("저장")
+            }
+          }
+        }
+      }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

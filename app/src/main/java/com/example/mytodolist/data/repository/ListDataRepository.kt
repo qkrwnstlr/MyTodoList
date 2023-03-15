@@ -5,7 +5,7 @@ import com.example.mytodolist.model.ListState
 
 interface ListDataRepository {
   fun getAllListData(vararg filter: ListState): Map<Int, ListData>
-  fun addListData(listData: ListData)
+  fun addListData(todo: String)
   fun removeListData(no: Int)
   fun getOneListDataWithNo(no: Int): ListData?
   fun changeFinishState(no: Int)
