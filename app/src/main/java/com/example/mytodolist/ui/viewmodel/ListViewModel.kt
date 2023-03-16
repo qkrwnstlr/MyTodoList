@@ -16,12 +16,14 @@ class ListViewModel : ViewModel() {
   )
 
   private fun updateListData() {
-    _repository.getAllListData(*_searchFilterList.keys.filter { _searchFilterList[it]!! }
-      .toTypedArray())
+    _repository.getAllListData(
+      searchText,
+      *_searchFilterList.keys.filter { _searchFilterList[it]!! }
+        .toTypedArray())
   }
 
   val listDataList: Map<Int, ListData> =
-    _repository.getAllListData(*_searchFilterList.keys.filter { _searchFilterList[it]!! }
+    _repository.getAllListData("", *_searchFilterList.keys.filter { _searchFilterList[it]!! }
       .toTypedArray())
 
   private val _isCheckedList = mutableStateMapOf<Int, Boolean>()
@@ -32,6 +34,11 @@ class ListViewModel : ViewModel() {
   var searchText by mutableStateOf("")
   fun onSearchTextChange(value: String) {
     searchText = value
+    _repository.getAllListData(
+      searchText,
+      *_searchFilterList.keys.filter { _searchFilterList[it]!! }
+        .toTypedArray(),
+    )
   }
 
   var addText by mutableStateOf("")

@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import com.example.mytodolist.model.ListData
 import com.example.mytodolist.model.ListDataDTO
 import com.example.mytodolist.model.ListState
+import com.example.mytodolist.util.kmp.StringKMP
 
 class MemoryListDataRepository : ListDataRepository {
   private val _memoryRepository =
@@ -17,10 +18,12 @@ class MemoryListDataRepository : ListDataRepository {
   private val _listDataList = mutableStateMapOf<Int, ListData>()
   private var _currentNo = 4;
 
-  override fun getAllListData(vararg filter: ListState): Map<Int, ListData> {
+  override fun getAllListData(pattern: String, vararg filter: ListState): Map<Int, ListData> {
     _listDataList.clear()
+    val stringKMP = StringKMP(pattern)
     for (no in _memoryRepository.keys) {
-      if (filter.contains(ListState.fromBoolean(_memoryRepository[no]!!.isFinished)))
+      if (filter.contains(ListState.fromBoolean(_memoryRepository[no]!!.isFinished)) &&
+        stringKMP.kmp(_memoryRepository[no]!!.todo))
         _listDataList[no] = ListData.fromListDataDTO(_memoryRepository[no]!!)
     }
     return _listDataList
