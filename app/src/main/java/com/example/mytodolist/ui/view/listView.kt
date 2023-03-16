@@ -30,6 +30,7 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mytodolist.model.ListData
 import com.example.mytodolist.model.ListState
+import com.example.mytodolist.ui.viewmodel.CheckBoxListController
 import com.example.mytodolist.ui.viewmodel.ListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,7 +103,7 @@ fun ListLayout(modifier: Modifier = Modifier) {
   val viewModel = viewModel<ListViewModel>()
   Column(modifier) {
     ListHead(
-      viewModel::removeListData,
+      viewModel::onDeleteButtonClicked,
       viewModel.searchText,
       viewModel::onSearchTextChange,
       viewModel::onIsSearchFilterDDMExpendedChange,
@@ -111,17 +112,14 @@ fun ListLayout(modifier: Modifier = Modifier) {
       viewModel.searchFilterList,
       viewModel::onSearchFilterCheckedChange,
     )
-    ListTop(
-      viewModel.isAllChecked,
-      viewModel::onAllCheckedChanged,
-    )
+    ListTop(viewModel.checkBoxListController)
     LazyColumn { // 임마는 왜 자꾸 호출됨...?
       items(items = viewModel.listDataList.toList()) { (no, listData) ->
         ListItem(
           listData,
           viewModel.isCheckedList[no] ?: false,
-          viewModel::onCheckedChange,
-          viewModel::changeFinishState
+          viewModel.checkBoxListController,
+          viewModel::onCompleteButtonClick
         )
       }
     }
@@ -202,8 +200,7 @@ fun ListHead(
 
 @Composable
 fun ListTop(
-  allChecked: Boolean,
-  onAllCheckedChange: () -> Unit,
+  checkBoxListController: CheckBoxListController,
   modifier: Modifier = Modifier
 ) {
   Row(
@@ -213,8 +210,8 @@ fun ListTop(
   ) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
       Checkbox(
-        checked = allChecked,
-        onCheckedChange = { onAllCheckedChange() },
+        checked = checkBoxListController.isAllChecked,
+        onCheckedChange = { checkBoxListController.onAllCheckedChanged() },
       )
       Text(
         text = "#",
@@ -246,7 +243,7 @@ fun ListTop(
 fun ListItem(
   listData: ListData,
   isChecked: Boolean,
-  onCheckedChange: (Int) -> Unit,
+  checkBoxListController: CheckBoxListController,
   onCompleteButtonClick: (Int) -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -258,7 +255,7 @@ fun ListItem(
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
       Checkbox(
         checked = isChecked,
-        onCheckedChange = { onCheckedChange(listData.no) },
+        onCheckedChange = { checkBoxListController.onCheckedChange(listData.no) },
       )
       Text(text = "${listData.no}", modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
     }

@@ -1,6 +1,7 @@
 package com.example.mytodolist.ui.viewmodel
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import com.example.mytodolist.data.repository.ListDataRepository
 import com.example.mytodolist.data.repository.MemoryListDataRepository
@@ -15,50 +16,31 @@ class ListViewModel : ViewModel() {
     ListState.UNFINISHED to true,
   )
 
-  private fun updateListData() {
-    _repository.getAllListData(
-      searchText,
-      *_searchFilterList.keys.filter { _searchFilterList[it]!! }
-        .toTypedArray())
-  }
-
   val listDataList: Map<Int, ListData> =
     _repository.getAllListData("", *_searchFilterList.keys.filter { _searchFilterList[it]!! }
       .toTypedArray())
 
   private val _isCheckedList = mutableStateMapOf<Int, Boolean>()
-  private var _isCheckedCount by mutableStateOf(0)
-  var isAllChecked by mutableStateOf(false)
+  val checkBoxListController by lazy { CheckBoxListController(listDataList, _isCheckedList) }
   val isCheckedList: Map<Int, Boolean> = _isCheckedList
+
+  private fun updateListData() {
+    _repository.getAllListData(
+      searchText,
+      *_searchFilterList.keys.filter { _searchFilterList[it]!! }.toTypedArray()
+    )
+    checkBoxListController.onAllCheckedChanged(false)
+  }
 
   var searchText by mutableStateOf("")
   fun onSearchTextChange(value: String) {
     searchText = value
-    _repository.getAllListData(
-      searchText,
-      *_searchFilterList.keys.filter { _searchFilterList[it]!! }
-        .toTypedArray(),
-    )
+    updateListData()
   }
 
   var addText by mutableStateOf("")
   fun onAddTextChange(value: String) {
     addText = value
-  }
-
-  fun onCheckedChange(no: Int, changeTo: Boolean? = null) {
-    _isCheckedList[no] = changeTo ?: !(_isCheckedList[no] ?: false)
-    if (_isCheckedList[no]!!) ++_isCheckedCount
-    else --_isCheckedCount
-    isAllChecked = _isCheckedCount == listDataList.size
-  }
-
-  fun onAllCheckedChanged() {
-    if (isAllChecked) _isCheckedList.clear()
-    else listDataList
-      .forEach { (no, _) -> _isCheckedList[no] = true }
-    _isCheckedCount = if (isAllChecked) 0 else listDataList.size
-    isAllChecked = !isAllChecked
   }
 
   var isAddListDataPopupExpended by mutableStateOf(false)
@@ -69,18 +51,18 @@ class ListViewModel : ViewModel() {
 
   fun onAddListDataButtonClicked(todo: String) {
     _repository.addListData(todo)
-    updateListData()
     onIsAddListDataPopupExpendedChanged()
+    updateListData()
   }
 
-  fun removeListData() {
+  fun onDeleteButtonClicked() {
     _isCheckedList.forEach { (no, isChecked) ->
       if (isChecked) _repository.removeListData(no)
     }
     updateListData()
   }
 
-  fun changeFinishState(no: Int) {
+  fun onCompleteButtonClick(no: Int) {
     _repository.changeFinishState(no)
   }
 
@@ -94,9 +76,38 @@ class ListViewModel : ViewModel() {
     isSearchFilterDDMExpended = !isSearchFilterDDMExpended
     if (!isSearchFilterDDMExpended) {
       updateListData()
-      isAllChecked = false
-      _isCheckedList.clear()
-      _isCheckedCount = 0
     }
+  }
+}
+
+class CheckBoxListController(
+  private val listDataList: Map<Int, ListData>,
+  private val _isCheckedList: SnapshotStateMap<Int, Boolean> = mutableStateMapOf()
+) {
+  private var _isCheckedCount by mutableStateOf(0)
+  var isAllChecked by mutableStateOf(false)
+
+  fun onCheckedChange(no: Int, changeTo: Boolean? = null) {
+    _isCheckedList[no] = changeTo ?: !(_isCheckedList[no] ?: false)
+    if (_isCheckedList[no]!!) ++_isCheckedCount
+    else --_isCheckedCount
+    isAllChecked = _isCheckedCount == listDataList.size
+  }
+
+  fun onAllCheckedChanged(changeTo: Boolean = !isAllChecked) {
+    if (changeTo) setAllCheckedList()
+    else clearCheckedList()
+  }
+
+  private fun clearCheckedList() {
+    isAllChecked = false
+    _isCheckedList.clear()
+    _isCheckedCount = 0
+  }
+
+  private fun setAllCheckedList() {
+    isAllChecked = true
+    listDataList.forEach { (no, _) -> _isCheckedList[no] = true }
+    _isCheckedCount = listDataList.size
   }
 }
