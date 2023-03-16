@@ -30,8 +30,9 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.mytodolist.model.ListData
 import com.example.mytodolist.model.ListState
-import com.example.mytodolist.ui.viewmodel.CheckBoxListController
 import com.example.mytodolist.ui.viewmodel.ListViewModel
+import com.example.mytodolist.util.checkbox.CheckBoxListController
+import com.example.mytodolist.util.textfield.TextFieldController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,8 +92,7 @@ fun ListView(modifier: Modifier = Modifier) {
         expanded = viewModel.isAddListDataPopupExpended,
         onDismissRequest = viewModel::onIsAddListDataPopupExpendedChanged,
         onAddButtonClicked = viewModel::onAddListDataButtonClicked,
-        addTExt = viewModel.addText,
-        onAddTextChange = viewModel::onAddTextChange
+        addTextFieldController = viewModel.addTextFieldController
       )
     }
   }
@@ -104,8 +104,7 @@ fun ListLayout(modifier: Modifier = Modifier) {
   Column(modifier) {
     ListHead(
       viewModel::onDeleteButtonClicked,
-      viewModel.searchText,
-      viewModel::onSearchTextChange,
+      viewModel.searchTextFieldController,
       viewModel::onIsSearchFilterDDMExpendedChange,
       viewModel.isSearchFilterDDMExpended,
       viewModel::onIsSearchFilterDDMExpendedChange,
@@ -130,8 +129,7 @@ fun ListLayout(modifier: Modifier = Modifier) {
 @Composable
 fun ListHead(
   onDeleteButtonClicked: () -> Unit,
-  searchText: String,
-  onSearchTextChange: (String) -> Unit,
+  addTextFieldController: TextFieldController,
   onSearchFilterListButtonClicked: () -> Unit,
   isSearchFilterDDMExpended: Boolean,
   onIsSearchFilterDDMExpendedChange: () -> Unit,
@@ -146,15 +144,15 @@ fun ListHead(
       verticalAlignment = Alignment.CenterVertically
     ) {
       BasicTextField(
-        value = searchText,
-        onValueChange = onSearchTextChange,
+        value = addTextFieldController.text,
+        onValueChange = addTextFieldController::onTextChange,
         modifier = Modifier
           .weight(1f)
           .height(ButtonDefaults.MinHeight)
           .padding(start = 10.dp),
       ) {
         TextFieldDefaults.TextFieldDecorationBox(
-          value = searchText,
+          value = addTextFieldController.text,
           innerTextField = it,
           enabled = false,
           singleLine = true,
@@ -318,8 +316,7 @@ fun AddListDataPopup(
   expanded: Boolean,
   onDismissRequest: () -> Unit,
   onAddButtonClicked: (String) -> Unit,
-  addTExt: String,
-  onAddTextChange: (String) -> Unit,
+  addTextFieldController: TextFieldController,
   modifier: Modifier = Modifier,
 ) {
   if (expanded)
@@ -341,14 +338,14 @@ fun AddListDataPopup(
             .padding(20.dp)
         ) {
           BasicTextField(
-            value = addTExt,
-            onValueChange = onAddTextChange,
+            value = addTextFieldController.text,
+            onValueChange = addTextFieldController::onTextChange,
             modifier = Modifier
               .height(ButtonDefaults.MinHeight)
               .fillMaxWidth()
           ) {
             TextFieldDefaults.TextFieldDecorationBox(
-              value = addTExt,
+              value = addTextFieldController.text,
               innerTextField = it,
               enabled = false,
               singleLine = true,
@@ -364,7 +361,7 @@ fun AddListDataPopup(
           }
           Spacer(modifier = Modifier.height(10.dp))
           Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-            Button(onClick = { onAddButtonClicked(addTExt) }) {
+            Button(onClick = { onAddButtonClicked(addTextFieldController.text) }) {
               Text("저장")
             }
           }

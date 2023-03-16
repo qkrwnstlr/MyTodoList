@@ -7,6 +7,8 @@ import com.example.mytodolist.data.repository.ListDataRepository
 import com.example.mytodolist.data.repository.MemoryListDataRepository
 import com.example.mytodolist.model.ListData
 import com.example.mytodolist.model.ListState
+import com.example.mytodolist.util.checkbox.CheckBoxListController
+import com.example.mytodolist.util.textfield.TextFieldController
 
 class ListViewModel : ViewModel() {
   private val _repository: ListDataRepository = MemoryListDataRepository()
@@ -26,27 +28,19 @@ class ListViewModel : ViewModel() {
 
   private fun updateListData() {
     _repository.getAllListData(
-      searchText,
+      searchTextFieldController.text,
       *_searchFilterList.keys.filter { _searchFilterList[it]!! }.toTypedArray()
     )
     checkBoxListController.onAllCheckedChanged(false)
   }
 
-  var searchText by mutableStateOf("")
-  fun onSearchTextChange(value: String) {
-    searchText = value
-    updateListData()
-  }
-
-  var addText by mutableStateOf("")
-  fun onAddTextChange(value: String) {
-    addText = value
-  }
+  val searchTextFieldController = TextFieldController(::updateListData)
+  val addTextFieldController = TextFieldController(::updateListData)
 
   var isAddListDataPopupExpended by mutableStateOf(false)
   fun onIsAddListDataPopupExpendedChanged() {
     isAddListDataPopupExpended = !isAddListDataPopupExpended
-    addText = ""
+    addTextFieldController.clearText()
   }
 
   fun onAddListDataButtonClicked(todo: String) {
@@ -77,37 +71,5 @@ class ListViewModel : ViewModel() {
     if (!isSearchFilterDDMExpended) {
       updateListData()
     }
-  }
-}
-
-class CheckBoxListController(
-  private val listDataList: Map<Int, ListData>,
-  private val _isCheckedList: SnapshotStateMap<Int, Boolean> = mutableStateMapOf()
-) {
-  private var _isCheckedCount by mutableStateOf(0)
-  var isAllChecked by mutableStateOf(false)
-
-  fun onCheckedChange(no: Int, changeTo: Boolean? = null) {
-    _isCheckedList[no] = changeTo ?: !(_isCheckedList[no] ?: false)
-    if (_isCheckedList[no]!!) ++_isCheckedCount
-    else --_isCheckedCount
-    isAllChecked = _isCheckedCount == listDataList.size
-  }
-
-  fun onAllCheckedChanged(changeTo: Boolean = !isAllChecked) {
-    if (changeTo) setAllCheckedList()
-    else clearCheckedList()
-  }
-
-  private fun clearCheckedList() {
-    isAllChecked = false
-    _isCheckedList.clear()
-    _isCheckedCount = 0
-  }
-
-  private fun setAllCheckedList() {
-    isAllChecked = true
-    listDataList.forEach { (no, _) -> _isCheckedList[no] = true }
-    _isCheckedCount = listDataList.size
   }
 }
